@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Total de Cartas por Pessoa</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <h1>Total de Cartas por Pessoa</h1>
+    <ul>
+        {% for user in total_cards_data %}
+            <li>{{ user.username }}: {{ user.total_cards }} cartas</li>
+        {% endfor %}
+    </ul>
+    <a href="{{ url_for('statistics') }}">Voltar às Estatísticas</a>
+</body>
+</html>

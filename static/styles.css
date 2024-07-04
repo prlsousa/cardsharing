@@ -1,0 +1,81 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+}
+
+h1, h2, h3 {
+    color: #333;
+    text-align: left; /* Alinha os títulos à esquerda */
+}
+
+form {
+    margin-bottom: 20px;
+}
+
+input, select {
+    margin-right: 10px;
+    margin-bottom: 10px; /* Espaçamento inferior entre os inputs */
+}
+
+button {
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+li {
+    padding: 5px 0;
+}
+
+/* Estilos para o contêiner principal */
+.main-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Estilos para o botão de instruções */
+.instruction-button {
+    padding: 5px 10px;
+    margin-top: 10px;
+}
+
+/* Estilos para o popup */
+.popup {
+    display: none;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    z-index: 9999;
+    overflow: auto;
+    padding-top: 100px;
+}
+
+.popup-content {
+    background-color: #fefefe;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 600px;
+    text-align: center;
+    border-radius: 5px;
+    position: relative;
+}
+
+.close {
+    color: #aaa;
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}

@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Possíveis Doações de Cartas</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <h1>Possíveis Doações de Cartas</h1>
+    <ul>
+        {% for donation in donations %}
+        <li>{{ donation.donor }} pode doar {{ donation.card_name }} do álbum {{ donation.package_name }} para {{ donation.recipient }}. {{ donation.recipient }} está na posição {{ donation.priority_position }} em prioridade.</li>
+        {% endfor %}
+    </ul>
+    <a href="{{ url_for('statistics') }}">Voltar às Estatísticas</a>
+</body>
+</html>

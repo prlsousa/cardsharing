@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prioridade</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <h1>Prioridade</h1>
+    {% for package in priority_data %}
+        <h2>{{ package.package_name }}</h2>
+        <ul>
+            {% for user in package.users %}
+                <li>{{ user.username }} precisa da {{ user.missing_card }} para completar o álbum</li>
+            {% endfor %}
+        </ul>
+    {% endfor %}
+    <a href="{{ url_for('statistics') }}">Voltar às Estatísticas</a>
+</body>
+</html>
