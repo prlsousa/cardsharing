@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ user.username }} - Preencha seus Álbuns</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        /* CSS para o contêiner principal */
+        .main-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* CSS para o contêiner dos álbuns */
+        .albums-container {
+            overflow-x: auto;
+            white-space: nowrap;
+            display: flex;
+            flex-wrap: nowrap;
+            padding-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        /* CSS para cada álbum */
+        .album {
+            flex: 0 0 auto;
+            width: 80%;
+            margin-right: 10px;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        /* Estilo para o popup */
+        .popup {
+            display: none;
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 9999;
+            overflow: auto;
+            padding-top: 100px;
+        }
+
+        .popup-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+            text-align: center;
+            border-radius: 5px;
+            position: relative;
+        }
+
+        .close {
+            color: #aaa;
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <h1>{{ user.username }}, Preencha seus Álbuns</h1>
+
+        <!-- Botão para abrir o popup de instruções -->
+        <button class="instruction-button" onclick="openInstructions()">Instruções de Uso</button>
+
+        <!-- Popup de instruções -->
+        <div id="popup" class="popup">
+            <div class="popup-content">
+                <span class="close" onclick="closeInstructions()">&times;</span>
+                <h2>Instruções de Uso</h2>
+                <p>- A organização de cartas no álbum leva em consideração primeiro a linha e depois a coluna.</p>
+                <p>- Marque todas as cartas douradas, mesmo que não tenha.</p>
+                <p>- Nunca adicione cartas repetidas nas cartas douradas.</p>
+            </div>
+        </div>
+
+        <!-- Conteúdo dos álbuns -->
+        <div class="albums-container">
+            {% for package in packages %}
+            <div class="album" id="album_{{ package.id }}" {% if package.id != current_package_id %}style="display: none;"{% endif %}>
+                <form action="{{ url_for('update_package', package_id=package.id) }}" method="POST">
+                    <input type="hidden" name="package_id" value="{{ package.id }}"> <!-- Campo oculto package_id -->
+                    <h2>{{ package.name }}</h2>
+                    {% for item in package.items %}
+                        <label>
+                            <input type="checkbox" id="has_card_{{ item.id }}" name="has_card_{{ item.id }}"
+                                {% if user_items[item.id] and user_items[item.id].has_card %} checked {% endif %}>
+                            {{ item.name }}
+                        </label>
+                        {% if user_items[item.id] and user_items[item.id].has_card %}
+                            <label for="quantity_{{ item.id }}">Qtd de Repetidas:</label>
+                            <input type="number" id="quantity_{{ item.id }}" name="quantity_{{ item.id }}"
+                                value="{{ user_items[item.id].quantity }}" min="0" max="20">
+                        {% endif %}
+                        <br>
+                    {% endfor %}
+                    <button type="submit">Salvar Pacote</button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Navegação entre álbuns -->
+        <div class="navigation">
+            <button class="nav-button" id="prev-album">Anterior</button>
+            <button class="nav-button" id="next-album">Próximo</button>
+        </div>
+
+        <!-- Script para controle da navegação entre álbuns -->
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const albums = document.querySelectorAll('.album');
+                let currentPackageId = parseInt("{{ current_package_id }}") || 1; // Definindo um valor padrão se current_package_id não estiver definido
+                let currentIndex = getCurrentIndex(currentPackageId);
+        
+                function getCurrentIndex(packageId) {
+                    for (let i = 0; i < albums.length; i++) {
+                        if (albums[i].id === `album_${packageId}`) {
+                            return i;
+                        }
+                    }
+                    return 0;
+                }
+        
+                function showAlbum(index) {
+                    albums.forEach((album, idx) => {
+                        if (idx === index) {
+                            album.style.display = 'block';
+                        } else {
+                            album.style.display = 'none';
+                        }
+                    });
+                }
+        
+                showAlbum(currentIndex); // Mostra o álbum atual ao carregar a página
+        
+                document.getElementById('prev-album').addEventListener('click', function() {
+                    currentIndex = (currentIndex - 1 + albums.length) % albums.length;
+                    currentPackageId = parseInt(albums[currentIndex].id.split('_')[1]);
+                    showAlbum(currentIndex);
+                });
+        
+                document.getElementById('next-album').addEventListener('click', function() {
+                    currentIndex = (currentIndex + 1) % albums.length;
+                    currentPackageId = parseInt(albums[currentIndex].id.split('_')[1]);
+                    showAlbum(currentIndex);
+                });
+            });
+
+            // Funções para controle do popup de instruções
+            function openInstructions() {
+                var popup = document.getElementById("popup");
+                popup.style.display = "block";
+            }
+
+            function closeInstructions() {
+                var popup = document.getElementById("popup");
+                popup.style.display = "none";
+            }
+        </script>
+
+        <a href="{{ url_for('select_user') }}">Voltar para a Seleção de Usuário</a>
+    </div>
+</body>
+</html>
