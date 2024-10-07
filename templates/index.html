@@ -6,16 +6,23 @@
     <title>{{ user.username }} - Preencha seus Álbuns</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <style>
-        /* CSS para o contêiner principal */
         .main-container {
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
+            display: flex;
+            flex-direction: column;
         }
 
-        /* CSS para o contêiner dos álbuns */
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
         .albums-container {
-            overflow-x: auto;
+            overflow-x: hidden;
             white-space: nowrap;
             display: flex;
             flex-wrap: nowrap;
@@ -23,18 +30,45 @@
             border: 1px solid #ccc;
             border-radius: 5px;
             margin-bottom: 20px;
+            position: relative;
         }
 
-        /* CSS para cada álbum */
         .album {
-            flex: 0 0 auto;
-            width: 80%;
-            margin-right: 10px;
+            flex: 0 0 100%;
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            display: none;
+        }
+
+        .album-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-gap: 10px;
+            justify-items: center;
+        }
+
+        .card {
+            width: 100%;
+            text-align: center;
+            border: 1px solid #ccc;
+            border-radius: 5px;
             padding: 10px;
             box-sizing: border-box;
         }
 
-        /* Estilo para o popup */
+        .card-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+        }
+
+        .card input {
+            margin-top: 10px;
+        }
+
         .popup {
             display: none;
             position: fixed;
@@ -69,16 +103,104 @@
             font-weight: bold;
             cursor: pointer;
         }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .nav-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            background-color: #007BFF;
+            color: white;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .nav-button:hover {
+            background-color: #0056b3;
+        }
+
+        .instruction-button {
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            background-color: #28a745;
+            color: white;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .instruction-button:hover {
+            background-color: #218838;
+        }
+
+        .back-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            background-color: #6c757d;
+            color: white;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+            margin-top: 20px;
+        }
+
+        .back-button:hover {
+            background-color: #5a6268;
+        }
+
+        .reset-button {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+            margin-top: 20px;
+        }
+
+        .reset-button:hover {
+            background-color: #c82333;
+        }
+
+        .save-button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+            margin-top: 20px;
+        }
+
+        .save-button:hover {
+            background-color: #218838;
+        }
     </style>
 </head>
 <body>
     <div class="main-container">
-        <h1>{{ user.username }}, Preencha seus Álbuns</h1>
+        <div class="header-container">
+            <h1>{{ user.username }}, Preencha seus Álbuns</h1>
+            <div>
+                <label for="is_premium">Usuário Premium:</label>
+                <input type="checkbox" id="is_premium" name="is_premium" {% if user.is_premium %} checked {% endif %} onchange="togglePremium()">
+            </div>
+            <button class="instruction-button" onclick="openInstructions()">Instruções de Uso</button>
+        </div>
 
-        <!-- Botão para abrir o popup de instruções -->
-        <button class="instruction-button" onclick="openInstructions()">Instruções de Uso</button>
-
-        <!-- Popup de instruções -->
         <div id="popup" class="popup">
             <div class="popup-content">
                 <span class="close" onclick="closeInstructions()">&times;</span>
@@ -89,45 +211,57 @@
             </div>
         </div>
 
-        <!-- Conteúdo dos álbuns -->
-        <div class="albums-container">
+        <div class="albums-container" id="albums-container">
             {% for package in packages %}
-            <div class="album" id="album_{{ package.id }}" {% if package.id != current_package_id %}style="display: none;"{% endif %}>
-                <form action="{{ url_for('update_package', package_id=package.id) }}" method="POST">
-                    <input type="hidden" name="package_id" value="{{ package.id }}"> <!-- Campo oculto package_id -->
-                    <h2>{{ package.name }}</h2>
-                    {% for item in package.items %}
-                        <label>
-                            <input type="checkbox" id="has_card_{{ item.id }}" name="has_card_{{ item.id }}"
-                                {% if user_items[item.id] and user_items[item.id].has_card %} checked {% endif %}>
-                            {{ item.name }}
-                        </label>
-                        {% if user_items[item.id] and user_items[item.id].has_card %}
-                            <label for="quantity_{{ item.id }}">Qtd de Repetidas:</label>
-                            <input type="number" id="quantity_{{ item.id }}" name="quantity_{{ item.id }}"
-                                value="{{ user_items[item.id].quantity }}" min="0" max="20">
-                        {% endif %}
-                        <br>
-                    {% endfor %}
-                    <button type="submit">Salvar Pacote</button>
+            <div class="album" id="album_{{ package.id }}" {% if package.id == current_package_id %}style="display: block;"{% endif %}>
+                <form id="album-form-{{ package.id }}" action="{{ url_for('update_package', package_id=package.id) }}" method="POST" onsubmit="return false;">
+                    <input type="hidden" name="package_id" value="{{ package.id }}">
+                    <h2 style="text-align: center;">Álbum {{ package.id }}</h2>
+                    <div class="album-grid">
+                        {% for item in package.items %}
+                            <div class="card">
+                                <label class="card-label">
+                                    {{ item.name }} <br>
+                                    <input type="checkbox" id="has_card_{{ item.id }}" name="has_card_{{ item.id }}"
+ {% if user_items[item.id] is defined and user_items[item.id].has_card %} checked {% endif %}
+ onchange="toggleQuantityField(this, '{{ item.id }}')">
+                                    <label for="quantity_{{ item.id }}">Repetidas:</label>
+                                    <input type="number" id="quantity_{{ item.id }}" name="quantity_{{ item.id }}"
+ value="{% if user_items[item.id] is defined %}{{ user_items[item.id].quantity }}{% endif %}" min="0" max="20"
+ {% if not user_items[item.id] is defined or not user_items[item.id].has_card %} disabled {% endif %}>
+                                    <label for="is_golden_{{ item.id }}">Dourada:</label>
+                                    <input type="checkbox" id="is_golden_{{ item.id }}" name="is_golden_{{ item.id }}"
+ {% if user_items[item.id] is defined and user_items[item.id].is_golden %} checked {% endif %}
+ onchange="toggleGoldenField(this, '{{ item.id }}')">
+                                </label>
+                            </div>
+                        {% endfor %}
+                    </div>
                 </form>
             </div>
             {% endfor %}
         </div>
 
-        <!-- Navegação entre álbuns -->
         <div class="navigation">
-            <button class="nav-button" id="prev-album">Anterior</button>
-            <button class="nav-button" id="next-album">Próximo</button>
+            <button class="nav-button" id="prev-album">&lt; Anterior</button>
+            <button class="save-button" onclick="saveAll()">Salvar Alterações</button>
+            <button class="nav-button" id="next-album">Próximo &gt;</button>
         </div>
 
-        <!-- Script para controle da navegação entre álbuns -->
+        <button class="reset-button" onclick="confirmReset()">Zerar Cartas</button>
+
+        <form action="{{ url_for('select_user') }}">
+            <button type="submit" class="back-button">Voltar para a Seleção de Usuário</button>
+        </form>
+
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 const albums = document.querySelectorAll('.album');
-                let currentPackageId = parseInt("{{ current_package_id }}") || 1; // Definindo um valor padrão se current_package_id não estiver definido
+                const albumsContainer = document.getElementById('albums-container');
+                let currentPackageId = parseInt("{{ current_package_id }}") || 1;
                 let currentIndex = getCurrentIndex(currentPackageId);
-        
+                let startX, endX;
+
                 function getCurrentIndex(packageId) {
                     for (let i = 0; i < albums.length; i++) {
                         if (albums[i].id === `album_${packageId}`) {
@@ -136,7 +270,7 @@
                     }
                     return 0;
                 }
-        
+
                 function showAlbum(index) {
                     albums.forEach((album, idx) => {
                         if (idx === index) {
@@ -146,35 +280,174 @@
                         }
                     });
                 }
-        
-                showAlbum(currentIndex); // Mostra o álbum atual ao carregar a página
-        
+
+                function handleSwipe() {
+                    if (startX - endX > 50) {
+                        // swipe left
+                        currentIndex = (currentIndex + 1) % albums.length;
+                    } else if (endX - startX > 50) {
+                        // swipe right
+                        currentIndex = (currentIndex - 1 + albums.length) % albums.length;
+                    }
+                    currentPackageId = parseInt(albums[currentIndex].id.split('_')[1]);
+                    showAlbum(currentIndex);
+                    updateQuantityFields();
+                }
+
+                albumsContainer.addEventListener('touchstart', function(e) {
+                    startX = e.touches[0].clientX;
+                });
+
+                albumsContainer.addEventListener('touchend', function(e) {
+                    endX = e.changedTouches[0].clientX;
+                    handleSwipe();
+                });
+
+                showAlbum(currentIndex);
+                updateQuantityFields();
+
                 document.getElementById('prev-album').addEventListener('click', function() {
                     currentIndex = (currentIndex - 1 + albums.length) % albums.length;
                     currentPackageId = parseInt(albums[currentIndex].id.split('_')[1]);
                     showAlbum(currentIndex);
+                    updateQuantityFields();
                 });
-        
+
                 document.getElementById('next-album').addEventListener('click', function() {
                     currentIndex = (currentIndex + 1) % albums.length;
                     currentPackageId = parseInt(albums[currentIndex].id.split('_')[1]);
                     showAlbum(currentIndex);
+                    updateQuantityFields();
                 });
             });
 
-            // Funções para controle do popup de instruções
             function openInstructions() {
-                var popup = document.getElementById("popup");
-                popup.style.display = "block";
+                document.getElementById('popup').style.display = 'block';
             }
 
             function closeInstructions() {
-                var popup = document.getElementById("popup");
-                popup.style.display = "none";
+                document.getElementById('popup').style.display = 'none';
+            }
+
+            function toggleQuantityField(checkbox, itemId) {
+                var quantityField = document.getElementById('quantity_' + itemId);
+                quantityField.disabled = !checkbox.checked;
+                if (!checkbox.checked) {
+                    quantityField.value = 0;
+                }
+            }
+
+            function toggleGoldenField(checkbox, itemId) {
+                var quantityField = document.getElementById('quantity_' + itemId);
+                var cardCheckbox = document.getElementById('has_card_' + itemId);
+                if (checkbox.checked) {
+                    cardCheckbox.checked = true;
+                    quantityField.value = 0;
+                    quantityField.disabled = true;
+                } else {
+                    quantityField.disabled = !cardCheckbox.checked;
+                }
+            }
+
+            function updateQuantityFields() {
+                const goldenCheckboxes = document.querySelectorAll('.card input[name^="is_golden"]');
+                goldenCheckboxes.forEach(checkbox => {
+                    const itemId = checkbox.id.split('_')[2];
+                    const quantityField = document.getElementById('quantity_' + itemId);
+                    if (checkbox.checked) {
+                        quantityField.disabled = true;
+                    }
+                });
+            }
+
+            function saveItem(packageId, itemId, isGolden = false) {
+                const form = document.getElementById('album-form-' + packageId);
+                const formData = new FormData(form);
+                formData.append('is_golden', isGolden);
+
+                fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Success:', data);
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                });
+            }
+
+            function saveAll() {
+                const forms = document.querySelectorAll('form[id^="album-form-"]');
+                forms.forEach(form => {
+                    const formData = new FormData(form);
+                    fetch(form.action, {
+                        method: 'POST',
+                        body: formData,
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Success:', data);
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
+                    });
+                });
+                savePremium();
+            }
+
+            function savePremium() {
+                const isPremium = document.getElementById('is_premium').checked;
+                fetch("{{ url_for('update_user') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ user_id: {{ user.id }}, is_premium: isPremium }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Success:', data);
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                });
+            }
+
+            function confirmReset() {
+                if (confirm("Você tem certeza de que deseja zerar todas as cartas de todos os álbuns?")) {
+                    resetCards();
+                }
+            }
+
+            function resetCards() {
+                fetch("{{ url_for('reset_user_cards') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ user_id: {{ user.id }} }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "success") {
+                        alert("Todas as cartas foram zeradas.");
+                        // Desmarca todas as cartas e reseta os campos de quantidade
+                        const checkboxes = document.querySelectorAll('.card input[type="checkbox"]');
+                        checkboxes.forEach(checkbox => {
+                            checkbox.checked = false;
+                            toggleQuantityField(checkbox, checkbox.id.split('_')[2]);
+                        });
+                    } else {
+                        alert("Ocorreu um erro ao tentar zerar as cartas.");
+                    }
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                });
             }
         </script>
-
-        <a href="{{ url_for('select_user') }}">Voltar para a Seleção de Usuário</a>
     </div>
 </body>
 </html>
