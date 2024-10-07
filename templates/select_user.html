@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Seleção de Usuário</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script>
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text)
+                .then(() => alert('Link do jogo copiado!'))
+                .catch(err => console.error('Erro ao copiar: ', err));
+        }
+    </script>
 </head>
 <body>
     <h1>Selecione o Usuário</h1>
@@ -17,36 +24,40 @@
         <button type="submit">Selecionar Usuário</button>
     </form>
 
+    <h2>Estatísticas</h2>
+    <a href="{{ url_for('statistics') }}">Ir para Estatísticas</a>
+
     <h2>Adicionar Usuário</h2>
     <form action="{{ url_for('add_user') }}" method="POST">
         <input type="text" name="username" placeholder="Nome do Usuário">
-        <input type="text" name="web_address" placeholder="Endereço do Facebook">
+        <input type="text" name="web_address" placeholder="Link do jogo">
         <button type="submit">Adicionar Usuário</button>
     </form>
 
-    <h2>Editar Usuário</h2>
-    <form action="{{ url_for('update_user') }}" method="POST">
-        <select name="user_id">
-            {% for user in users %}
-                <option value="{{ user.id }}">{{ user.username }}</option>
-            {% endfor %}
-        </select>
-        <input type="text" name="username" placeholder="Novo Nome">
-        <input type="text" name="web_address" placeholder="Novo Endereço do Facebook">
-        <button type="submit">Editar Usuário</button>
-    </form>
+    
+ <!-- Lista de usuários com botão para copiar Link do jogo -->
+    <h2>Lista de Usuários</h2>
+    <ul>
+     {% for user in users %}
+         <li>
+             {{ user.username }}
+             <a href="{{ user.web_address }}" target="_blank">Link do jogo</a>
+             <button onclick="copyToClipboard('{{ user.web_address }}')">Copiar Link do jogo</button>
+         </li>
+     {% endfor %}
+    </ul>
+    <h3>Deletar Usuário</h3>
+<form action="{{ url_for('delete_user') }}" method="POST" onsubmit="return confirm('Tem certeza que deseja deletar este usuário? Todos os seus dados serão perdidos.')">
+    <select name="user_id">
+        {% for user in users %}
+            <option value="{{ user.id }}">{{ user.username }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit">Deletar Usuário</button>
+</form>
 
-    <h2>Deletar Usuário</h2>
-    <form action="{{ url_for('delete_user') }}" method="POST">
-        <select name="user_id">
-            {% for user in users %}
-                <option value="{{ user.id }}">{{ user.username }}</option>
-            {% endfor %}
-        </select>
-        <button type="submit">Deletar Usuário</button>
-    </form>
+   
 
-    <h2>Estatísticas</h2>
-    <a href="{{ url_for('statistics') }}">Ir para Estatísticas</a>
+    
 </body>
 </html>
