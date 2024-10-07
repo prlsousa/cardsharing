@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-    <h1>Total de Cartas por Pessoa</h1>
+    <h1>Total de Cartas por Usuário</h1>
     <ul>
         {% for user in total_cards_data %}
             <li>{{ user.username }}: {{ user.total_cards }} cartas</li>
