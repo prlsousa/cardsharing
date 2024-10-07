@@ -3,19 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cartas Faltantes por Álbum e Pessoa</title>
+    <title>Extrato de cartas</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-    <h1>Cartas Faltantes por Álbum e Pessoa</h1>
-    {% for user in missing_cards_data %}
-        <h2>{{ user.username }}</h2>
-        <ul>
-            {% for package in user.packages %}
-                <li>{{ package.package_name }}: {% if package.missing_cards %}faltam {{ package.missing_cards | length }} cartas ({{ package.missing_cards | join(', ') }}){% else %}Completo{% endif %}</li>
+    <h1>Extrato de cartas</h1>
+
+    <form action="{{ url_for('missing_cards_per_album_person') }}" method="POST">
+        <label for="user_id">Selecione um usuário:</label>
+        <select name="user_id" id="user_id">
+            {% for user in users %}
+                <option value="{{ user.id }}" {% if selected_user_id and user.id == selected_user_id %}selected{% endif %}>{{ user.username }}</option>
             {% endfor %}
-        </ul>
-    {% endfor %}
+        </select>
+        <button type="submit">Ver Cartas Faltantes</button>
+    </form>
+
+    {% if missing_cards_data %}
+        {% for user in missing_cards_data %}
+            <h2>{{ user.username }}</h2>
+            <ul>
+                {% for package in user.packages %}
+                    <li>{{ package.package_name }}: {% if package.missing_cards %}faltam {{ package.missing_cards | length }} cartas ({{ package.missing_cards | join(', ') }}){% else %}Completo{% endif %}</li>
+                {% endfor %}
+            </ul>
+        {% endfor %}
+    {% endif %}
+
     <a href="{{ url_for('statistics') }}">Voltar às Estatísticas</a>
 </body>
 </html>
