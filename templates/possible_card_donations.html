@@ -7,12 +7,42 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-    <h1>Possíveis Doações de Cartas</h1>
-    <ul>
-        {% for donation in donations %}
-        <li>{{ donation.donor }} pode doar {{ donation.card_name }} do álbum {{ donation.package_name }} para {{ donation.recipient }}. {{ donation.recipient }} está na posição {{ donation.priority_position }} em prioridade.</li>
-        {% endfor %}
-    </ul>
-    <a href="{{ url_for('statistics') }}">Voltar às Estatísticas</a>
+    <div class="container">
+        <h1>Possíveis Doações de Cartas</h1>
+        <form action="{{ url_for('possible_card_donations') }}" method="POST">
+            <label for="recipient_id">Selecione um destinatário:</label>
+            <select name="recipient_id" id="recipient_id">
+                {% for user in users %}
+                    <option value="{{ user.id }}" {% if recipient and user.id == recipient.id %}selected{% endif %}>{{ user.username }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit">Verificar Doações</button>
+        </form>
+
+        {% if recipient %}
+            <h2>Lista de Prioridades</h2>
+            <ul>
+                {% for donation in priority_donations %}
+                    <li>{{ donation.donor }} pode doar a {{ donation.card_name }} do {{ donation.package_name }} para {{ donation.recipient }} (Prioridade: {{ donation.priority_position }})</li>
+                {% endfor %}
+            </ul>
+
+            <h2>Outras Doações</h2>
+            <ul>
+                {% for donation in other_donations %}
+                    <li>{{ donation.donor }} pode doar a {{ donation.card_name }} do {{ donation.package_name }} para {{ donation.recipient }} (Prioridade: {{ donation.priority_position }})</li>
+                {% endfor %}
+            </ul>
+
+            <h2>Receber Cartas</h2>
+            <ul>
+                {% for receive in receive_cards_data %}
+                    <li>{{ receive.donor }} pode receber a {{ receive.card_name }} do {{ receive.package_name }} de {{ receive.recipient }} (Prioridade: {{ receive.priority_position }})</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        <a href="{{ url_for('statistics') }}" class="btn">Voltar para Estatísticas</a>
+    </div>
 </body>
 </html>
